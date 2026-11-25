@@ -23,26 +23,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# These overrides affect only Streamlit's outer shell, not the approved
-# AgriSource HTML styles, cards, menus, workflows or page structure.
-st.markdown(
-    """
-    <style>
-    [data-testid="stAppViewContainer"] { background: #f5f7f2; }
-    [data-testid="stMain"] { padding: 0 !important; }
-    [data-testid="stMainBlockContainer"] {
-        max-width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-    [data-testid="stHeader"] { height: 0 !important; min-height: 0 !important; }
-    [data-testid="stDecoration"] { display: none !important; }
-    div[data-testid="stIFrame"] { margin: 0 !important; }
-    div[data-testid="stIFrame"] iframe { border: none !important; display: block; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
 
 def get_gate_password() -> str:
@@ -79,13 +59,38 @@ def require_optional_access_password() -> None:
 
 require_optional_access_password()
 
+# Keep the approved AgriSource interface at viewport height. Desktop scrolling
+# happens inside its content panel rather than on Streamlit's outer page.
+st.markdown(
+    """
+    <style>
+    [data-testid="stAppViewContainer"] { background: #f5f7f2; height: 100dvh; overflow: hidden; }
+    [data-testid="stMain"] { padding: 0 !important; height: 100dvh; overflow: hidden; }
+    [data-testid="stMainBlockContainer"] {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
+    }
+    [data-testid="stHeader"] { height: 0 !important; min-height: 0 !important; }
+    [data-testid="stDecoration"] { display: none !important; }
+    div[data-testid="stIFrame"] { margin: 0 !important; height: 100dvh !important; overflow: hidden !important; }
+    div[data-testid="stIFrame"] iframe { border: none !important; display: block; height: 100dvh !important; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
 if not HTML_FILE.is_file():
     st.error("AgriSource interface not found: agrisource_demo.html")
     st.stop()
 
 # Supported by Streamlit 1.57+: the full HTML document is isolated inside
 # an iframe, preserving existing JavaScript, navigation, styling and images.
-# The iframe resizes with content, avoiding a separate internal scrollbar.
+# Desktop navigation now scrolls inside the HTML content pane while
+# the Streamlit embedding remains at viewport height to avoid double-scrolling.
 st.iframe(
     HTML_FILE,
     width="stretch",
